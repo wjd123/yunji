@@ -1,0 +1,159 @@
+分层思想
+	目的：解耦
+	分层：
+		web层（Servlet类）
+			接收客户端的请求，调用service层的业务方法，响应结果给客户端
+		service层
+			业务逻辑处理，调用Dao层的JDBC方法
+		dao层
+			JDBC方法，数据库的增删改查操作
+		po层
+			持久化对象，JavaBean对象，一般是与数据库中表一一对应的实体类
+		vo层：
+			用于业务层之间的数据传递
+		util层
+			工具类
+		filter层
+			过滤器
+				非法访问拦截
+				请求乱码解决
+				
+	流程：
+		客户端  -> 服务端（web层->service层->dao层）
+				
+
+
+用户行为	actionName
+	用户登录			actionName=login
+	进入个人中心		actionName=userCenter
+	加载头像			actionName=userHead
+	验证昵称的唯一性	actionName=checkNick
+	修改用户信息		actionName=updateUser
+	用户退出			actionName=logout
+	
+	1、获取用户行为
+		String actionName = request.getParameter("actionName");
+	2、判断用户行为，调用指定方法
+		if ("xxx".equals(actionName)) {
+			// 调用方法
+		}
+		
+	
+
+
+				
+				
+一、用户登录
+	==========前台==========
+		1、添加表单，设置表单属性
+			action="userServlet" method="post" id="loginForm"
+		2、设置表单元素的name属性值，修改id属性值（首字母改小写）
+			设置文本框和密码的name属性值
+			设置复选框的name属性和value属性（如果复选框未被选中则获取不了value）
+			设置隐藏域，传递用户行为（name=actionName）
+		3、修改config.js文件中的checkLogin方法
+			验证表单
+				1、获取表单元素的值（姓名、密码）
+				2、判断元素的值是否为空 （引入util.js文件）
+					如果为空，设置提示信息（span标签），并return
+				3、如果不为空，则提交表单
+				
+
+	==========后台==========
+		整体思路：
+			1、获取参数（姓名、密码）
+			2、参数的非空判断  （RresultInfo的封装类，用来封装响应）
+				如果为空
+					将状态码及原因设置到resultInfo对象中 （回显对象）
+					将resultInfo设置到request作用域中
+					请求转发转发跳转到login页面（通过el表达式显示数据）
+					return
+			3、如果不为空，通过用户名查询用户对象是否存在
+			4、如果用户对象为空
+				将状态码及原因设置到resultInfo对象中 （回显对象）
+					将resultInfo设置到request作用域中
+					请求转发转发跳转到login页面（通过el表达式显示数据）
+					return
+			5、如果用户对象不为空，将数据库中查询到的用户密码与前台传递的密码作比较（需要将密码加密后再比较）
+				如果密码不正确
+					将状态码及原因设置到resultInfo对象中 （回显对象）
+					将resultInfo设置到request作用域中
+					请求转发转发跳转到login页面 （通过el表达式显示数据）
+				如果密码正确
+					将用户对象存到session作用域中
+					判断是否选择记住密码（rem的值是否为1）
+						如果是，则记住密码，将用户姓名密码存到cookie对象中，设置失效时间，并响应给客户端
+						如果否，则清空原有的cookie对象
+					重定向跳转到index页面
+					
+		Web层：（接收请求、响应数据）
+			1、获取参数（姓名、密码）
+			2、调用Service层的方法，返回resultInfo对象
+			3、判断是否登录成功
+				如果失败
+					将resultInfo设置到request作用域中
+					请求转发转发跳转到login页面 （通过el表达式显示数据）
+				如果成功
+					将用户对象存到session作用域中
+					判断是否选择记住密码（rem的值是否为1）
+						如果是，则记住密码，将用户姓名密码存到cookie对象中，设置失效时间，并响应给客户端
+						如果否，则清空原有的cookie对象
+					重定向跳转到index页面
+				
+		
+		Service层：（业务逻辑）
+			1、判断参数是否为空
+				如果为空
+					将状态码及原因设置到resultInfo对象中 （回显对象）
+					返回resultInfo对象
+			2、如果不为空，调用Dao层的查询方法，返回用户对象
+			3、如果用户对象为空
+				将状态码及原因设置到resultInfo对象中 （回显对象）
+				返回resultInfo对象	
+			4、如果用户对象不为空，将数据库中查询到的用户密码与前台传递的密码作比较（需要将密码加密后再比较）
+				如果密码不正确
+					将状态码及原因设置到resultInfo对象中 （回显对象）
+				如果密码正确
+					将状态码和用户对象设置到resultInfo对象中色result属性中
+			5、返回resultInfo对象
+		
+		
+		Dao层：（数据库的增删改查操作）
+			准备BaseDao
+			1、定义sql语句	String sql = "select * from tb_user where uname = ?";
+			2、设置参数集合
+			3、调用BaseDao的查询方法
+			4、返回用户对象
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

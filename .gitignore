@@ -1,7 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
-!/.idea/
-!/.settings/
-!/build/
-!/.classpath
-!/.project
-!/myshangyun.iml
+/.idea/
+/.settings/
+/build/
+/.classpath
+/.project
+/myshangyun.iml
